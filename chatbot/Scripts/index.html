@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AgroNet Chatbot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #22c55e;
+      border-radius: 10px;
+    }
+    .fade-in {
+      animation: fadeIn 0.3s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-green-50 to-green-100 min-h-screen flex items-center justify-center p-4">
+
+  <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 space-y-5 border border-green-200">
+    <div class="text-center">
+      <h1 class="text-3xl font-bold text-green-700">🌿 AgroNet Chatbot</h1>
+      <p class="text-sm text-gray-600">Smart, sustainable farming assistant</p>
+    </div>
+
+    <div id="chatbox" class="h-72 overflow-y-auto border border-green-100 bg-green-50 rounded-lg p-3 space-y-3 text-sm">
+      <!-- Chat messages will appear here -->
+    </div>
+
+    <div class="flex gap-2">
+      <input id="messageInput" type="text" placeholder="Ask about crops, weather..." 
+             class="flex-1 px-4 py-2 rounded-full border border-green-300 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white" />
+      <button onclick="sendMessage()" 
+              class="bg-green-600 text-white px-4 py-2 rounded-full font-medium hover:bg-green-700 transition">
+        Send
+      </button>
+    </div>
+  </div>
+
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById("messageInput");
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      addMessage("You", msg, "bg-green-200 text-right self-end");
+      input.value = "";
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: msg }),
+        });
+        const data = await res.json();
+        addMessage("Bot", data.response, "bg-white text-left self-start");
+      } catch (err) {
+        addMessage("Bot", "⚠️ Unable to connect to the server.", "bg-red-100 text-left self-start");
+      }
+    }
+
+    function addMessage(sender, text, style) {
+      const chatbox = document.getElementById("chatbox");
+      const msg = document.createElement("div");
+      msg.className = `fade-in px-4 py-2 rounded-xl shadow-sm ${style} max-w-[80%]`;
+      msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+      chatbox.appendChild(msg);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+  </script>
+
+</body>
+</html>
